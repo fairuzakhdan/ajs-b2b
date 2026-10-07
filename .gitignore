@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local SQLite database (dibuat ulang via `npx prisma migrate dev` + seed)
+/prisma/*.db
+/prisma/*.db-journal
+
+# temp server logs (dari e2e smoke test)
+/server-out.log
+/server-err.log

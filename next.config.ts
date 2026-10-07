@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    // Placeholder produk menggunakan SVG — izinkan next/image merender SVG lokal.
+    dangerouslyAllowSVG: true,
+  },
 };
 
 export default nextConfig;

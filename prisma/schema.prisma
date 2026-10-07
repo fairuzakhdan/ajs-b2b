@@ -1,0 +1,96 @@
+// Prisma schema — AJS B2B Fish Commodity Supply Portal (MVP)
+// Lihat plan/IMPLEMENTATION_PLAN.md §2 untuk rasionalisasi data model.
+
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  BUYER
+  ADMIN
+}
+
+enum StockStatus {
+  AVAILABLE
+  RESERVED
+  UNAVAILABLE
+}
+
+enum OrderStatus {
+  REQUESTED
+  CONFIRMED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  companyName  String?
+  role         Role
+  createdAt    DateTime @default(now())
+
+  cartItems    CartItem[]
+  orders       Order[]
+}
+
+model Product {
+  id           String      @id @default(cuid())
+  name         String
+  slug         String      @unique
+  origin       String
+  grade        String
+  condition    String
+  description  String
+  imageUrl     String
+  availableQty Float
+  moq          Float
+  stockStatus  StockStatus @default(AVAILABLE)
+  price        Float?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Float
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  buyerId   String
+  status    OrderStatus @default(REQUESTED)
+  note      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  buyer     User        @relation(fields: [buyerId], references: [id])
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id                  String  @id @default(cuid())
+  orderId             String
+  productId           String
+  quantity            Float
+  productNameSnapshot String
+
+  order               Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product             Product @relation(fields: [productId], references: [id])
+}
