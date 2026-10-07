@@ -15,7 +15,7 @@ Dibangun sebagai jawaban atas *AJS Developer Challenge Brief* (lihat
 | Area | Pilihan |
 |---|---|
 | Framework | Next.js 16 (App Router, Turbopack) + React 19 |
-| Database | SQLite (file-based) via Prisma ORM 7 + driver adapter `better-sqlite3` |
+| Database | SQLite via Prisma ORM 7 + driver adapter libSQL (`@prisma/adapter-libsql`) — file lokal untuk dev, Turso untuk production |
 | Auth | Session cookie sederhana — JWT (jose) + bcrypt, bukan enterprise auth |
 | Mutasi data | Server Actions (`"use server"`) |
 | Validasi | Zod |
@@ -45,16 +45,76 @@ Buka http://localhost:3000.
 
 ### Environment Variables
 
-File `.env` sudah disertakan untuk kemudahan demo (SQLite lokal, bukan
-production). Isinya:
+Salin `.env.example` menjadi `.env` lalu sesuaikan nilainya:
+
+```bash
+cp .env.example .env
+```
+
+Variabel yang dipakai:
 
 ```env
+# Lokal (SQLite file-based)
 DATABASE_URL="file:./prisma/dev.db"
+DATABASE_AUTH_TOKEN=""   # kosongkan untuk SQLite lokal
 SESSION_SECRET="<random-secret-untuk-signing-jwt-session>"
 ```
 
-> Untuk penggunaan nyata, `SESSION_SECRET` harus di-generate ulang dan
-> tidak di-commit.
+Generate `SESSION_SECRET` acak:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+> `.env` tidak di-commit (lihat `.gitignore`). Hanya `.env.example` yang
+> ikut repo. Untuk penggunaan nyata, `SESSION_SECRET` harus di-generate ulang.
+
+---
+
+## Deploy ke Vercel (dengan Turso)
+
+SQLite file-based tidak bisa dipakai di Vercel (filesystem serverless bersifat
+ephemeral & read-only). Untuk production, database di-host di **Turso**
+(SQLite terdistribusi via libSQL). Kode `lib/db.ts` memakai adapter libSQL yang
+sama untuk lokal maupun Turso — cukup berbeda di environment variables.
+
+**1. Buat database Turso** lalu ambil URL + auth token:
+
+```bash
+turso db create <nama-db>
+turso db show <nama-db> --url        # => libsql://<nama-db>-<org>.turso.io
+turso db tokens create <nama-db>     # => auth token
+```
+
+**2. Siapkan schema + seed di Turso** (dari lokal, set env sementara):
+
+```bash
+# PowerShell
+$env:DATABASE_URL="libsql://<nama-db>-<org>.turso.io"
+$env:DATABASE_AUTH_TOKEN="<token>"
+
+# buat tabel sesuai prisma/migrations lalu seed
+npx prisma db seed
+```
+
+> Prisma CLI (`migrate`/`db push`) belum mengenali scheme `libsql://`, jadi
+> pembuatan tabel di Turso dilakukan dengan mengeksekusi SQL dari
+> `prisma/migrations/<init>/migration.sql` via libSQL client, baru `db seed`.
+
+**3. Set Environment Variables di Vercel** (Project → Settings → Environment
+Variables, untuk Production):
+
+| Key | Value |
+|---|---|
+| `DATABASE_URL` | `libsql://<nama-db>-<org>.turso.io` |
+| `DATABASE_AUTH_TOKEN` | token dari Turso |
+| `SESSION_SECRET` | di-generate ulang (jangan pakai nilai dev) |
+
+**4. Deploy** — import repo di Vercel. Build command (`prisma generate &&
+next build`) sudah terpasang di `package.json`.
+
+> Jangan klik "Add" pada integrasi Storage Vercel bila sudah punya database
+> Turso sendiri — itu akan membuat DB baru yang kosong dan menimpa env.
 
 ---
 
@@ -112,9 +172,10 @@ kedua berbasis role di tiap `layout.tsx` (defense in depth).
 
 ## Keputusan Teknis & Trade-off
 
-- **SQLite + Prisma** dipilih agar reviewer tidak perlu setup server DB
-  eksternal — cukup satu file `prisma/dev.db`. Bukan pilihan untuk skala
-  production.
+- **SQLite + Prisma (adapter libSQL)** dipilih agar reviewer tidak perlu
+  setup server DB eksternal — cukup satu file `prisma/dev.db` untuk lokal.
+  Untuk production dipakai **Turso** (libSQL) via adapter yang sama, sehingga
+  kode `lib/db.ts` tidak berubah antara lokal dan production.
 - **Auth minimal** (session cookie + 2 role BUYER/ADMIN), sesuai brief yang
   menyatakan tidak perlu enterprise authentication. Password tetap di-hash
   dengan bcrypt dan session ditandatangani (JWT).
