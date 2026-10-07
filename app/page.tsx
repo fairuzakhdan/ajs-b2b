@@ -1,166 +1,243 @@
-import Image from "next/image";
 import Link from "next/link";
+import {
+  Anchor,
+  ArrowRight,
+  Waves,
+  Snowflake,
+  Boxes,
+  MapPin,
+  ShieldCheck,
+  Fish,
+  Scale,
+  Package,
+} from "lucide-react";
+import {
+  LandingNavbar,
+  LandingFooter,
+  HeroSection,
+  AboutSection,
+  SupplyChainSection,
+} from "@/features/public/home";
 import { prisma } from "@/lib/db";
 
+const WHY_US = [
+  {
+    title: "Flexible Sourcing",
+    desc: "Procurement berdasarkan custom order & spesifikasi kebutuhan buyer.",
+    icon: Waves,
+  },
+  {
+    title: "Multi-Commodity Capability",
+    desc: "Rentang spesies luas, dengan custom sizing & bentuk produk.",
+    icon: Fish,
+  },
+  {
+    title: "Muara Baru Hub",
+    desc: "Kehadiran langsung di pusat perdagangan perikanan utama Jakarta.",
+    icon: MapPin,
+  },
+  {
+    title: "Guarded Cold-Chain",
+    desc: "Suhu terkontrol dari sumber hingga distribusi.",
+    icon: Snowflake,
+  },
+  {
+    title: "Hands-on Operations",
+    desc: "Quality control, sorting, & weighing internal secara langsung.",
+    icon: Scale,
+  },
+  {
+    title: "Long-term Partnership",
+    desc: "Membangun kontinuitas pasokan yang andal untuk bisnis Anda.",
+    icon: ShieldCheck,
+  },
+];
+
+const stockStatusLabel: Record<string, string> = {
+  AVAILABLE: "Available",
+  RESERVED: "Reserved",
+  UNAVAILABLE: "Unavailable",
+};
+
+const stockStatusClass: Record<string, string> = {
+  AVAILABLE: "bg-emerald-500",
+  RESERVED: "bg-amber-500",
+  UNAVAILABLE: "bg-slate-400",
+};
+
 export default async function Home() {
-  const featuredProducts = await prisma.product.findMany({
-    take: 4,
-    orderBy: { createdAt: "asc" },
+  // Realtime dari database — bukan data statis. Katalog publik di landing
+  // mencerminkan stok & ketersediaan terkini yang dikelola admin.
+  const commodities = await prisma.product.findMany({
+    orderBy: { name: "asc" },
   });
 
   return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 text-white">
-        <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-          <p className="text-sm font-semibold uppercase tracking-wide text-blue-200 mb-4">
-            PT Altisan Jaya Sinergi
-          </p>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight max-w-3xl">
-            Mitra Terpercaya Fish Commodity Trading &amp; Supply dari Muara Baru
-          </h1>
-          <p className="mt-6 text-lg text-blue-100 max-w-2xl">
-            AJS menghubungkan sourcing hub utama di Muara Baru, Jakarta dengan
-            perusahaan pembeli komoditas laut — menghadirkan ketersediaan
-            stok yang jelas, spesifikasi produk yang transparan, dan proses
-            procurement B2B yang efisien.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link
-              href="/commodities"
-              className="rounded-md bg-white text-blue-900 font-semibold px-6 py-3 hover:bg-blue-50 transition-colors"
-            >
-              Lihat Komoditas
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-md border border-white/40 text-white font-semibold px-6 py-3 hover:bg-white/10 transition-colors"
-            >
-              Daftar / Login sebagai Buyer
-            </Link>
-          </div>
-        </div>
-      </section>
+    <div className="flex flex-col bg-slate-50">
+      <LandingNavbar />
 
-      {/* Capability summary */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-2xl font-bold text-slate-900 mb-10 text-center">
-          Mengapa AJS?
-        </h2>
-        <div className="grid gap-8 sm:grid-cols-3">
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-800 font-bold">
-              01
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-2">
-              Sourcing Hub Langsung
-            </h3>
-            <p className="text-sm text-slate-600">
-              Hub utama di Muara Baru, Jakarta — pusat sourcing komoditas laut
-              dengan jaringan nelayan dan partner supply terpercaya.
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-800 font-bold">
-              02
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-2">
-              Spesifikasi &amp; Stok Transparan
-            </h3>
-            <p className="text-sm text-slate-600">
-              Grade, origin, dan ketersediaan stok setiap komoditas ditampilkan
-              jelas, memudahkan keputusan procurement perusahaan Anda.
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-800 font-bold">
-              03
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-2">
-              Procurement B2B Terstruktur
-            </h3>
-            <p className="text-sm text-slate-600">
-              Ajukan Request Order melalui portal buyer — setiap permintaan
-              direview dan dikonfirmasi oleh tim AJS sebelum diproses.
-            </p>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
-      {/* Featured commodities */}
-      <section className="bg-slate-50 py-16">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Komoditas Utama
-            </h2>
-            <Link
-              href="/commodities"
-              className="text-sm font-medium text-blue-800 hover:text-blue-900"
-            >
-              Lihat semua →
-            </Link>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/commodities/${product.slug}`}
-                className="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-lg transition-shadow"
+      <AboutSection />
+
+      <SupplyChainSection />
+
+      {/* 6. PRIORITY COMMODITIES */}
+      <section id="commodities" className="mx-auto max-w-7xl px-6 py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="text-sm font-bold uppercase tracking-wider text-[#1E3A8A]">
+            Katalog Komoditas
+          </span>
+          <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#0F172A] md:text-4xl">
+            Komoditas Prioritas
+          </h2>
+          <p className="mt-4 text-slate-600">
+            Ketersediaan stok terupdate — ajukan Request Order melalui Portal
+            Buyer B2B.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {commodities.map((c) => {
+            const isAvailable =
+              c.stockStatus === "AVAILABLE" && c.availableQty > 0;
+            return (
+              <div
+                key={c.id}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
-                <div className="relative aspect-[4/3] bg-slate-100">
-                  <Image
-                    src={product.imageUrl}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
+                <Link
+                  href={`/commodities/${c.slug}`}
+                  className="relative block aspect-[4/3] overflow-hidden bg-slate-100"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={c.imageUrl}
+                    alt={c.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-slate-900 group-hover:text-blue-800 transition-colors">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Grade {product.grade} · {product.origin}
+                  <span className="absolute left-3 top-3 rounded-full bg-[#1E3A8A] px-2.5 py-1 text-xs font-bold text-white shadow">
+                    Grade {c.grade}
+                  </span>
+                  <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-slate-700 shadow">
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${stockStatusClass[c.stockStatus]}`}
+                    />
+                    {stockStatusLabel[c.stockStatus]}
+                  </span>
+                </Link>
+
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="font-bold text-[#0F172A]">{c.name}</h3>
+                  <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {c.origin}
                   </p>
-                  <span
-                    className={`inline-block mt-3 text-xs font-medium px-2 py-1 rounded-full ${
-                      product.stockStatus === "AVAILABLE"
-                        ? "bg-green-100 text-green-700"
-                        : product.stockStatus === "RESERVED"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-slate-200 text-slate-600"
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-lg bg-slate-50 p-2.5">
+                      <p className="flex items-center gap-1 text-xs text-slate-500">
+                        <Snowflake className="h-3 w-3" /> Kondisi
+                      </p>
+                      <p className="font-semibold text-slate-800">
+                        {c.condition}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-slate-50 p-2.5">
+                      <p className="flex items-center gap-1 text-xs text-slate-500">
+                        <Package className="h-3 w-3" /> MOQ
+                      </p>
+                      <p className="font-semibold text-slate-800">
+                        {c.moq.toLocaleString("id-ID")} KG
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 rounded-lg bg-emerald-50 p-2.5">
+                    <p className="flex items-center gap-1 text-xs text-emerald-700">
+                      <Boxes className="h-3 w-3" /> Ketersediaan Stok
+                    </p>
+                    <p className="font-bold text-emerald-700">
+                      {c.availableQty.toLocaleString("id-ID")} KG
+                    </p>
+                  </div>
+
+                  <Link
+                    href={`/commodities/${c.slug}`}
+                    className={`mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                      isAvailable
+                        ? "bg-[#1E3A8A] text-white hover:bg-[#162d6b]"
+                        : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                     }`}
                   >
-                    {product.stockStatus === "AVAILABLE"
-                      ? "Available"
-                      : product.stockStatus === "RESERVED"
-                      ? "Reserved"
-                      : "Unavailable"}
-                  </span>
+                    {isAvailable ? "Request Order" : "Lihat Detail"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </div>
-              </Link>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 7. WHY CHOOSE AJS */}
+      <section id="why-us" className="bg-white py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="text-sm font-bold uppercase tracking-wider text-[#1E3A8A]">
+              Keunggulan
+            </span>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#0F172A] md:text-4xl">
+              Mengapa Memilih AJS
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {WHY_US.map((w) => (
+              <div
+                key={w.title}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-7 transition-colors hover:border-sky-300 hover:bg-white hover:shadow-md"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-[#1E3A8A] text-white shadow-lg shadow-sky-500/20">
+                  <w.icon className="h-6 w-6" strokeWidth={1.9} />
+                </span>
+                <h3 className="mt-5 text-lg font-bold text-[#0F172A]">
+                  {w.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  {w.desc}
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="mx-auto max-w-6xl px-6 py-16 text-center">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">
-          Siap menjadi mitra procurement AJS?
-        </h2>
-        <p className="text-slate-600 max-w-xl mx-auto mb-8">
-          Daftar sebagai buyer untuk mengakses katalog lengkap, mengirim
-          Request Order, dan memantau status permintaan Anda secara langsung.
-        </p>
-        <Link
-          href="/login"
-          className="inline-block rounded-md bg-blue-800 text-white font-semibold px-8 py-3 hover:bg-blue-900 transition-colors"
-        >
-          Daftar / Login sebagai Buyer
-        </Link>
+      {/* 8. CTA BANNER */}
+      <section className="mx-auto max-w-7xl px-6 pb-24">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1E3A8A] via-[#162d6b] to-[#0F172A] px-8 py-16 text-center shadow-2xl md:px-16">
+          <Waves className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 text-sky-400/10" />
+          <Anchor className="pointer-events-none absolute -bottom-8 -left-8 h-48 w-48 text-sky-400/10" />
+          <div className="relative">
+            <h2 className="mx-auto max-w-2xl text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+              Siap Memenuhi Kebutuhan Pasokan Komoditas Ikan Anda?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-slate-300">
+              Dapatkan akses ketersediaan stok terupdate dan pengajuan order
+              request cepat melalui B2B Portal AJS.
+            </p>
+            <Link
+              href="/login"
+              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-[#1E3A8A] shadow-lg transition-transform hover:scale-105"
+            >
+              Masuk ke Portal Buyer
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
       </section>
+
+      <LandingFooter />
     </div>
   );
 }

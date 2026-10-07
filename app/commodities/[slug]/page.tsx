@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { RequestOrderForm } from "./RequestOrderForm";
+import { RequestOrderForm } from "@/features/public/commodities";
 
 const stockStatusLabel: Record<string, string> = {
   AVAILABLE: "Available",

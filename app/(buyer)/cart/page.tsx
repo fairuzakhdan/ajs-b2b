@@ -3,9 +3,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { RemoveButton } from "./RemoveButton";
-import { UpdateQtyForm } from "./UpdateQtyForm";
-import { SubmitOrderButton } from "./SubmitOrderButton";
+import {
+  RemoveButton,
+  UpdateQtyForm,
+  SubmitOrderButton,
+} from "@/features/buyer/cart";
 
 export const metadata: Metadata = {
   title: "Cart — AJS B2B Portal",

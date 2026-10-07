@@ -1,9 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import bcrypt from "bcryptjs";
 
-const adapter = new PrismaBetterSqlite3({
+const adapter = new PrismaLibSql({
   url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
+  authToken: process.env.DATABASE_AUTH_TOKEN,
 });
 const prisma = new PrismaClient({ adapter });
 
@@ -18,7 +19,7 @@ async function main() {
       condition: "Frozen",
       description:
         "Cakalang segar hasil tangkapan nelayan lokal, diproses dan dibekukan di fasilitas Muara Baru untuk menjaga kualitas dan kesegaran.",
-      imageUrl: "/products/cakalang.svg",
+      imageUrl: "/products/cakalang.jpg",
       availableQty: 850,
       moq: 100,
     },
@@ -30,7 +31,7 @@ async function main() {
       condition: "Frozen",
       description:
         "Ikan Deho grade A, dibekukan segar dari hub Muara Baru. Cocok untuk kebutuhan olahan dan ekspor.",
-      imageUrl: "/products/deho.svg",
+      imageUrl: "/products/deho.jpeg",
       availableQty: 1200,
       moq: 100,
     },
@@ -42,7 +43,7 @@ async function main() {
       condition: "Frozen",
       description:
         "Tuna fillet premium dari jaringan partner supply AJS, dipotong dan dibekukan dengan standar kualitas tinggi.",
-      imageUrl: "/products/tuna-fillet.svg",
+      imageUrl: "/products/tuna.jpeg",
       availableQty: 350,
       moq: 50,
     },
@@ -54,7 +55,7 @@ async function main() {
       condition: "Frozen",
       description:
         "Kerapu grade A dari Muara Baru, dibekukan utuh untuk menjaga tekstur dan kesegaran daging.",
-      imageUrl: "/products/kerapu.svg",
+      imageUrl: "/products/kerapu.jpg",
       availableQty: 180,
       moq: 25,
     },
